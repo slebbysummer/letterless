@@ -2,17 +2,19 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { hasBannedWord, isBannedCodename } from '../../supabase/functions/_shared/profanity.ts';
 import {
-  bannedLetters, clueCharProblem, normalizeCaseCode, validateClue, validateCodename, validateGuess,
+  bannedLetters, clueCharProblem, inWordPool, normalizeCaseCode, validateClue, validateCodename, validateGuess,
 } from '../../supabase/functions/_shared/rules.ts';
 
 const words = readFileSync(new URL('../../data/words.csv', import.meta.url), 'utf8')
   .trim().split('\n').slice(1).map((l) => l.split(','));
 
 describe('word list', () => {
-  it('has 500 words with the agreed level split', () => {
-    const counts = [1, 2, 3, 4].map((lvl) => words.filter((w) => Number(w[2]) === lvl).length);
-    expect(words).toHaveLength(500);
-    expect(counts).toEqual([120, 125, 125, 130]);
+  it('has the original 500 words plus 102 easy additions, no duplicates', () => {
+    expect(words).toHaveLength(602);
+    expect(new Set(words.map((w) => w[0])).size).toBe(602);
+  });
+  it('records the right banned-letter count for every word', () => {
+    for (const [w, banned] of words) expect(bannedLetters(w).length, w).toBe(Number(banned));
   });
   it('never blocks a real answer', () => {
     for (const [w] of words) expect(validateGuess(w).ok, w).toBe(true);
@@ -24,8 +26,12 @@ describe('banned letters', () => {
     expect(bannedLetters('MONSTER')).toEqual(['M', 'O', 'N', 'S', 'T', 'E', 'R']);
     expect(bannedLetters('banana')).toEqual(['B', 'A', 'N']);
   });
-  it('has enough 3-5 banned-letter words for a long game', () => {
-    expect(words.filter((w) => Number(w[1]) >= 3 && Number(w[1]) <= 5).length).toBe(245);
+  it('has a 246-word easy pool that never bans more than two vowels', () => {
+    expect(words.filter((w) => inWordPool(w[0])).length).toBe(246);
+    expect(inWordPool('SHARK')).toBe(true);   // 1 vowel, 5 banned
+    expect(inWordPool('CAKE')).toBe(true);    // 2 vowels, 4 banned
+    expect(inWordPool('HORSE')).toBe(false);  // 2 vowels, 5 banned
+    expect(inWordPool('PIANO')).toBe(false);  // 3 vowels
   });
 });
 

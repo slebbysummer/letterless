@@ -85,7 +85,7 @@ export function Home({ onEnter, notice }: { onEnter: (e: Entered) => void; notic
       <div className="card tilt" style={{ padding: '12px 14px', gap: 6 }} aria-label="Example briefing">
         <div className="label manila">Example briefing</div>
         <div style={{ fontSize: 15, lineHeight: 1.45, display: 'flex', flexWrap: 'wrap', columnGap: 12 }}>
-          {['BIG QUICK ANIMAL', 'NAAAY!', 'GIDDY-UP!'].map((c) => <span key={c} style={{ whiteSpace: 'nowrap' }}>&gt; {c}</span>)}
+          {['BIG QUICK ANIMAL', 'NAAAY!', 'GIDDY-UP!', 'LIK A BIG DAWG'].map((c) => <span key={c} style={{ whiteSpace: 'nowrap' }}>&gt; {c}</span>)}
         </div>
         <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
           <span className="typed" style={{ fontSize: 20, marginRight: 6 }}>= HORSE</span>

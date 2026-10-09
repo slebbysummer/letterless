@@ -94,12 +94,9 @@ export function WaitingRoom({ v, onLeave }: { v: View; onLeave: () => void }) {
         <div className="label">Mission settings {isHost ? '(host)' : `(set by ${agent(host)})`}</div>
         <Setting label="Rounds" options={ROUND_OPTIONS} value={room.rounds} field="rounds" format={String} />
         <Setting label="Turn length" options={TURN_OPTIONS} value={room.turn_seconds} field="turn_seconds" format={turnLabel} />
-        <div className="muted small" style={{ lineHeight: 1.4 }}>
-          Every agent gives clues once per round, cracking as many words as they can. One pass per turn. Emoji are redacted.
-        </div>
       </section>
 
-      <div className="bottom">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div className="error" role="alert">{error}</div>
         {isHost ? (
           <button type="button" className="btn big" disabled={!enough || busy} onClick={() => act('start_game')}>Begin mission</button>
@@ -109,6 +106,10 @@ export function WaitingRoom({ v, onLeave }: { v: View; onLeave: () => void }) {
         <div className="center muted" style={{ fontSize: 12 }}>
           {enough ? (isHost ? 'All agents ready' : `${agent(host)} will begin the mission`) : `Needs at least ${MIN_AGENTS} agents`}
         </div>
+      </div>
+
+      <div className="muted small" style={{ lineHeight: 1.4 }}>
+        Every agent gives clues once per round, cracking as many words as they can. One pass per turn. Emoji are redacted.
       </div>
     </main>
   );

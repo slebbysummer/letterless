@@ -63,11 +63,13 @@ The project is `lerpkitubxuoyjtoeiwy`.
 
 ### Changing the word list or the banned words
 
-1. Edit `data/words.csv` or `data/banned-words-en.txt`.
-2. Run `npm run gen`.
-3. For word changes, also run `npx supabase db push`. For banned-word changes, also redeploy the referee (step 4 above).
-
-To push a changed seed file, rename it with a newer date first, for example `20261101000000_seed_words.sql`.
+- **Words:** edit `data/words.csv` (word, number of different letters, level). Then generate a new migration with a later date in its name and push it:
+  ```bash
+  node scripts/gen-words-sql.mjs 20261101000000_word_update.sql
+  npx supabase db push
+  ```
+  Only words in the **pool** are drawn: those that ban at most one vowel with 3–5 banned letters, or two vowels with only 3–4 banned letters. The database works this out for each word automatically (`words.in_pool`).
+- **Banned words:** edit `data/banned-words-en.txt`, run `node scripts/gen-banned.mjs`, then redeploy the referee (step 4 above).
 
 ### Free-plan note
 
@@ -106,7 +108,8 @@ docs/                    brief, spec and design references
 
 - 2 to 8 agents per case (was 3 to 10).
 - Turn length options are 60s, 90s and 2 min, and 90s is the default (was 45/60/90, default 60).
-- No difficulty ladder: every word is drawn at random from the 245 words with 3 to 5 banned letters. If a very long game uses them all, harder words follow.
+- No difficulty ladder, and an easier pool (round 2): every word is drawn at random from 246 words that ban at most one vowel (3–5 banned letters), or two vowels with only 3–4 banned letters. 102 easy words were added to the original 500 (CRAB, PIZZA, SOFA, GOLF…). If a very long game uses the whole pool, the next-easiest words follow.
+- Begin mission sits straight under the mission settings, so it's visible without scrolling.
 - On-page keyboards replace the phone keyboard, so nothing gets covered. The clue-giver's banned letters are locked keys. On guessers' keyboards, letters the clue-giver has used are faded, because they can't be in the word.
 - The waiting room has a Share button that opens the phone's share sheet (WhatsApp and so on) with a link that pre-fills the case number.
 

@@ -25,6 +25,17 @@ export function bannedLetters(word: string): string[] {
   return [...new Set(word.toUpperCase())];
 }
 
+/**
+ * The word pool (mirrors words.in_pool in the database): at most one vowel banned
+ * with 3-5 banned letters, or two vowels banned with only 3-4 banned letters.
+ */
+export function inWordPool(word: string): boolean {
+  const letters = bannedLetters(word);
+  const vowels = letters.filter((l) => 'AEIOU'.includes(l)).length;
+  const n = letters.length;
+  return (vowels <= 1 && n >= 3 && n <= 5) || (vowels === 2 && n >= 3 && n <= 4);
+}
+
 export function validateCodename(raw: string): Result<string> {
   const name = raw.trim();
   if (name.length === 0) return { ok: false, error: 'Enter a codename first.' };

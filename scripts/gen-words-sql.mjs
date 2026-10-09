@@ -1,5 +1,9 @@
-// Turns data/words.csv into the seed migration for the words table.
+// Turns data/words.csv into a seed migration for the words table.
+// Usage: node scripts/gen-words-sql.mjs [migration file name]
+// Pass a new, later-dated name when the list changes so `supabase db push` applies it.
 import { readFileSync, writeFileSync } from 'node:fs';
+
+const outName = process.argv[2] ?? '20261009000002_seed_words.sql';
 
 const rows = readFileSync(new URL('../data/words.csv', import.meta.url), 'utf8')
   .trim().split(/\r?\n/).slice(1).map((line) => line.split(','));
@@ -16,5 +20,5 @@ insert into public.words (word, level, banned_count) values
 ${values.join(',\n')}
 on conflict (word) do update set level = excluded.level, banned_count = excluded.banned_count;
 `;
-writeFileSync(new URL('../supabase/migrations/20261009000002_seed_words.sql', import.meta.url), sql);
-console.log(`Wrote ${values.length} words`);
+writeFileSync(new URL(`../supabase/migrations/${outName}`, import.meta.url), sql);
+console.log(`Wrote ${values.length} words to ${outName}`);
