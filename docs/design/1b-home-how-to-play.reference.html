@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Letterless home</title>
+
+</head>
+<body>
+
+
+
+
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+
+body{margin:0}
+a{color:#1B1A17}a:hover{color:#000}
+</style>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F2ECDD; color: #1B1A17; font-family: 'Courier Prime', 'Courier New', Courier, monospace; padding: 36px 24px 24px; display: flex; flex-direction: column; gap: 18px; position: relative; overflow: hidden">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<span style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A4640">File ref. LL-001</span>
+<button type="button" aria-controls="howto" style="min-height: 44px; display: flex; align-items: center; padding: 0; margin-right: -4px; border: none; background: transparent; cursor: pointer">
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border: 3px solid #B3261E; border-radius: 3px; color: #B3261E; font-family: 'Special Elite', 'Courier New', monospace; font-size: 15px; letter-spacing: 0.1em; transform: rotate(5deg)">HOW TO PLAY<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(180deg)"><path d="M6 9l6 6 6-6"></path></svg></span>
+</button>
+</div>
+
+<div id="howto" style="position: absolute; top: 88px; left: 24px; right: 24px; z-index: 5; background: #FBF8F0; border: 2px solid #1B1A17; border-radius: 2px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 24px rgba(27,26,23,0.25)">
+<div style="display: flex; justify-content: space-between; align-items: center; margin: -10px -8px -4px 0">
+<span style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A4640">Mission briefing</span>
+<button type="button" aria-label="Close how to play" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; color: #1B1A17; cursor: pointer">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+</button>
+</div>
+<ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 9px; font-size: 15px; line-height: 1.4">
+<li>Each round, every agent gets one turn as the clue-giver: 60 seconds to get as many words cracked as possible.</li>
+<li>Describe each secret word without using any of its letters. Banned letters are locked.</li>
+<li>Words get harder as you go: each one bans more letters than the last.</li>
+<li>Everyone else guesses as often as they like. Wrong guesses are visible to all.</li>
+<li>The first agent to crack a word wins a point, and so does the clue-giver. Then the next word appears.</li>
+<li>Stuck? You get one pass per turn.</li>
+</ol>
+<div style="background: #E3CF9F; padding: 10px 12px; font-size: 14px; line-height: 1.4"><strong>Tip:</strong> Watch which letters the clue-giver avoids. They might be in the word.</div>
+</div>
+
+<div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px">
+<h1 style="margin: 0; font-family: 'Special Elite', 'Courier New', monospace; font-size: 52px; line-height: 1; font-weight: 400; letter-spacing: -0.01em">Letterless</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.4"><b>Your mission:</b> describe each word without any of its letters.</p>
+</div>
+<div style="background: #E3CF9F; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 10px; transform: rotate(-1deg)">
+<div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A3B17">Example briefing</div>
+<div style="display: flex; gap: 6px; align-items: center">
+<span style="font-family: 'Special Elite', monospace; font-size: 22px; margin-right: 6px">HORSE</span>
+<span style="display: inline-block; width: 18px; height: 22px; background: #1B1A17"></span>
+<span style="display: inline-block; width: 18px; height: 22px; background: #1B1A17"></span>
+<span style="display: inline-block; width: 18px; height: 22px; background: #1B1A17"></span>
+<span style="display: inline-block; width: 18px; height: 22px; background: #1B1A17"></span>
+<span style="display: inline-block; width: 18px; height: 22px; background: #1B1A17"></span>
+</div>
+<div style="font-size: 15px; line-height: 1.45">&gt; BIG QUICK ANIMAL<br>&gt; NAAAY!<br>&gt; GIDDY-UP!</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 14px; margin-top: 4px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="agent" style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A4640">Your codename <span id="agent-hint" style="letter-spacing: 0.06em; text-transform: none">(2–10 letters)</span></label>
+<div style="display: flex; align-items: center; height: 48px; box-sizing: border-box; border: 2px solid #1B1A17; background: #FBF8F0; border-radius: 2px; padding: 0 0 0 14px">
+<span style="font-family: 'Special Elite', 'Courier New', monospace; font-size: 18px; color: #1B1A17; padding-right: 8px; border-right: 1px dashed #8C857A">Agent</span>
+<input id="agent" type="text" placeholder="Fox" maxlength="10" aria-describedby="agent-hint" style="flex: 1; min-width: 0; height: 44px; border: none; background: transparent; padding: 0 10px; font-family: 'Courier Prime', 'Courier New', monospace; font-size: 17px; font-weight: 700; color: #1B1A17">
+</div>
+</div>
+<button type="button" style="height: 52px; border: none; border-radius: 2px; background: #1B1A17; color: #F2ECDD; font-family: 'Special Elite', 'Courier New', monospace; font-size: 19px; letter-spacing: 0.04em; cursor: pointer">Open a new case</button>
+<div style="display: flex; align-items: center; gap: 12px; font-size: 12px; letter-spacing: 0.14em; color: #4A4640">
+<span style="flex: 1; height: 1px; background: #8C857A"></span>
+<span>OR JOIN ONE</span>
+<span style="flex: 1; height: 1px; background: #8C857A"></span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="code" style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A4640">Case number</label>
+<div style="display: flex; gap: 8px">
+<input id="code" type="text" placeholder="K7Q2M" maxlength="5" style="flex: 1; min-width: 0; height: 52px; box-sizing: border-box; border: 2px dashed #1B1A17; background: #FBF8F0; border-radius: 2px; padding: 0 14px; font-family: 'Special Elite', 'Courier New', monospace; font-size: 22px; letter-spacing: 0.3em; color: #1B1A17; text-transform: uppercase">
+<button type="button" style="height: 52px; padding: 0 18px; border: 2px solid #1B1A17; border-radius: 2px; background: transparent; color: #1B1A17; font-family: 'Special Elite', 'Courier New', monospace; font-size: 17px; cursor: pointer">Join</button>
+</div>
+</div>
+</div>
+<div style="margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end">
+<span style="font-size: 12px; color: #4A4640; line-height: 1.4">3 to 10 agents<br>Friends only</span>
+<span style="border: 3px solid #B3261E; color: #B3261E; font-family: 'Special Elite', monospace; font-size: 20px; letter-spacing: 0.1em; padding: 4px 10px; transform: rotate(-8deg); border-radius: 3px">TOP SECRET</span>
+</div>
+</div>
+
+
+</body>
+</html>
