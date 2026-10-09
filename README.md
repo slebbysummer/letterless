@@ -1,8 +1,8 @@
 # Letterless
 
-A real-time party word game for 3 to 10 friends on their phones. Describe each secret word **without any of its letters** while everyone else races to guess it.
+A real-time party word game for 2 to 8 friends on their phones. Describe each secret word **without any of its letters** while everyone else races to guess it.
 
-- Game rules: [`docs/SPEC.md`](docs/SPEC.md)
+- Game rules: [`docs/SPEC.md`](docs/SPEC.md), updated by the playtest changes listed at the bottom of this page
 - Approved screens: [`docs/design/`](docs/design)
 
 ## How it fits together
@@ -102,15 +102,23 @@ tests/                   unit tests and the Playwright multiplayer test
 docs/                    brief, spec and design references
 ```
 
+## Changes after the first playtest (these override `docs/SPEC.md`)
+
+- 2 to 8 agents per case (was 3 to 10).
+- Turn length options are 60s, 90s and 2 min, and 90s is the default (was 45/60/90, default 60).
+- No difficulty ladder: every word is drawn at random from the 245 words with 3 to 5 banned letters. If a very long game uses them all, harder words follow.
+- On-page keyboards replace the phone keyboard, so nothing gets covered. The clue-giver's banned letters are locked keys. On guessers' keyboards, letters the clue-giver has used are faded, because they can't be in the word.
+- The waiting room has a Share button that opens the phone's share sheet (WhatsApp and so on) with a link that pre-fills the case number.
+
 ## Rules decisions made during the build
 
-- **Turn order** is the order agents joined. **Rounds** default to 2 and turn length to 60s.
+- **Turn order** is the order agents joined. **Rounds** default to 2.
 - **Clues** open after the 3-second briefing. The clue-giver may pass during the briefing.
 - **Between turns** is a single 5-second screen: the turn report plus the next agent's GET READY countdown.
 - A **word still on screen** when time runs out is shown as "unsolved" in the turn report.
 - **Leaving:**
   - If the clue-giver leaves mid-turn, their turn ends immediately.
-  - If fewer than 2 agents remain, the game ends and goes to the debrief.
+  - If only 1 agent remains, the game ends and goes to the debrief.
   - An agent who has been silent for over 60 seconds when their turn comes up is treated as having left. If they come back, they get their seat back.
 - **Lost tab:** an agent who closes their tab can rejoin with the same codename once their old seat has been quiet for 60 seconds.
 - **Play again** sends everyone, including spectators, back to the waiting room with the same settings, so the host can tweak them and press Begin mission.

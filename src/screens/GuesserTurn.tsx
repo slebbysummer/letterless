@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { Draft, Keyboard } from '../components/Keyboard.tsx';
 import { Stamp } from '../components/Stamp.tsx';
 import { TurnHeader } from '../components/TurnHeader.tsx';
 import { referee } from '../lib/api.ts';
@@ -10,7 +11,6 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
   const { game, turn, word, room, me, byId } = v;
   const [guess, setGuess] = useState('');
   const [note, setNote] = useState('');
-  const input = useRef<HTMLInputElement>(null);
   if (!game || !turn || !me) return null;
 
   const spectator = me.is_spectator || !game.turn_order.includes(me.id);
@@ -20,18 +20,13 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
   const last = [...v.turnWords].reverse().find((w) => w.status === 'cracked' || w.status === 'passed');
   const wrong = v.guesses.filter((g) => !g.correct);
   const myPoints = pointsFor(me.id, v.gameWords, turns);
-
-  const onType = (raw: string) => {
-    const letters = raw.replace(/[^A-Za-z]/g, '');
-    setNote(letters !== raw.replace(/\s/g, '') ? 'Guesses are letters only.' : '');
-    setGuess(letters.slice(0, GUESS_MAX));
-  };
+  // Letters the clue-giver has used can't be in the word: dim them as a hint.
+  const used = new Set(v.clues.flatMap((c) => [...c.text]).filter((ch) => /[A-Z]/.test(ch)));
 
   const send = async () => {
-    const text = guess.trim();
+    const text = guess;
     if (!text) return;
     setGuess('');
-    input.current?.focus();
     try {
       const res = await referee<{ correct: boolean; late?: boolean }>('guess', { room_id: room.id, text });
       setNote(res.late ? 'Too slow! That one was just cracked.' : '');
@@ -41,25 +36,27 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
   };
 
   return (
-    <main className="screen">
+    <main className="screen fit">
       <TurnHeader game={game} turn={turn} who={`${agent(giver)} is describing`} />
 
       {last?.revealed_word && (
-        <div className="dashed row" data-testid="last-word">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <span style={{ fontSize: 14 }}>
-              Last word: <strong>{last.revealed_word}</strong>
-              {last.status === 'cracked'
-                ? <>, cracked by {last.cracked_by === me.id ? 'you' : agent(byId[last.cracked_by!])}</>
-                : ', passed'}
+        <div className="dashed row" style={{ flexShrink: 0, padding: '6px 12px' }} data-testid="last-word">
+          <span style={{ fontSize: 14 }}>
+            Last word: <strong>{last.revealed_word}</strong>
+            {last.status === 'cracked'
+              ? <>, cracked by {last.cracked_by === me.id ? 'you' : agent(byId[last.cracked_by!])}</>
+              : ', passed'}
+          </span>
+          {last.status === 'cracked' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Stamp rotate={-6} size={11} pad="1px 5px">DECLASSIFIED</Stamp>
+              {last.cracked_by === me.id && <strong style={{ fontSize: 16 }}>+1</strong>}
             </span>
-            {last.status === 'cracked' && <span><Stamp rotate={-6} size={13} pad="1px 6px">DECLASSIFIED</Stamp></span>}
-          </div>
-          {last.status === 'cracked' && last.cracked_by === me.id && <strong style={{ fontSize: 18 }}>+1</strong>}
+          )}
         </div>
       )}
 
-      <section className="card">
+      <section className="card" style={{ flex: '3 1 0', minHeight: 110 }}>
         <div className="row label manila">
           <span>Word {word?.seq ?? '·'} · {word ? `${word.length} letters` : 'loading'}</span>
           <span>{cracked} cracked</span>
@@ -67,15 +64,17 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
         <div className="bars" aria-label={word ? `${word.length} letter word, redacted` : 'Redacted word'} data-testid="bars">
           {Array.from({ length: word?.length ?? 0 }, (_, i) => <span key={i} />)}
         </div>
-        {v.clues.length === 0
-          ? <div className="clues empty">{briefing ? `${agent(giver)} is reading the briefing…` : 'Waiting for the first clue…'}</div>
-          : <div className="clues" data-testid="clues">{v.clues.map((c) => <div key={c.id}>&gt; {c.text}</div>)}</div>}
+        <div className="scroll" style={{ flex: 1 }}>
+          {v.clues.length === 0
+            ? <div className="clues empty">{briefing ? `${agent(giver)} is reading the briefing…` : 'Waiting for the first clue…'}</div>
+            : <div className="clue-feed" data-testid="clues">{v.clues.map((c) => <div key={c.id}>&gt; {c.text}</div>)}</div>}
+        </div>
       </section>
 
-      <section style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minHeight: 0 }}>
+      <section className="grow" style={{ flex: '2 1 0' }}>
         <div className="row label"><span>Wrong guesses</span>{!spectator && <span>Your points: {myPoints}</span>}</div>
-        <div className="list">
-          {wrong.map((g) => (
+        <div className="list scroll" data-testid="guess-feed">
+          {[...wrong].reverse().map((g) => (
             <div key={g.id}>
               <span>{agent(byId[g.player_id])}{g.player_id === me.id ? ' (you)' : ''}</span>
               <span className="struck">{g.text.toLowerCase()}</span>
@@ -85,22 +84,28 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
       </section>
 
       {spectator ? (
-        <div className="dashed muted small" style={{ lineHeight: 1.4 }}>
+        <div className="dashed muted small" style={{ lineHeight: 1.4, flexShrink: 0 }}>
           This mission was already under way when you arrived. You're watching as a spectator and will join the next mission.
         </div>
       ) : (
-        <form style={{ display: 'flex', flexDirection: 'column', gap: 6 }} onSubmit={(e) => { e.preventDefault(); send(); }}>
-          <label htmlFor="guess" className="label">Your guess</label>
-          <div className="send-row">
-            <input id="guess" ref={input} className="field" type="text" value={guess} maxLength={GUESS_MAX} disabled={briefing}
-              placeholder={briefing ? 'Get ready…' : ''} autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck={false}
-              enterKeyHint="go" aria-describedby="guess-hint" onChange={(e) => onType(e.target.value)} />
-            <button type="submit" className="btn" disabled={briefing || !guess}>Guess</button>
+        <div className="compose">
+          <Draft text={guess.toLowerCase()} placeholder={briefing ? 'Get ready…' : 'Your guess'} testId="guess-draft" />
+          <div className="note-row">
+            <span className={note ? 'error' : 'muted'} role="status">
+              {note || (used.size ? 'Faded keys are in the clues, so not in the word.' : 'First to crack it wins the point.')}
+            </span>
           </div>
-          <div id="guess-hint" className={note ? 'error' : 'muted small'} role="status">
-            {note || 'First to crack it wins the point. Guess as often as you like.'}
-          </div>
-        </form>
+          <Keyboard
+            dimmed={used}
+            submitLabel="Guess"
+            disabled={briefing}
+            canSubmit={!briefing && !!guess}
+            onKey={(ch) => { setNote(''); setGuess((g) => (g.length < GUESS_MAX ? g + ch : g)); }}
+            onBackspace={() => setGuess((g) => g.slice(0, -1))}
+            onInvalid={() => setNote('Guesses are letters only.')}
+            onSubmit={send}
+          />
+        </div>
       )}
     </main>
   );

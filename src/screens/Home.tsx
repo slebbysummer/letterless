@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Chevron, Close } from '../components/Icons.tsx';
 import { Stamp } from '../components/Stamp.tsx';
 import { referee } from '../lib/api.ts';
-import { normalizeCaseCode, validateCodename } from '../../supabase/functions/_shared/rules.ts';
+import {
+  DEFAULT_TURN_SECONDS, MAX_AGENTS, MIN_AGENTS, normalizeCaseCode, validateCodename,
+} from '../../supabase/functions/_shared/rules.ts';
 
 export interface Entered { room_id: string; code: string }
 
@@ -61,16 +63,16 @@ export function Home({ onEnter, notice }: { onEnter: (e: Entered) => void; notic
             <button type="button" className="icon-btn" aria-label="Close how to play" onClick={() => setHowTo(false)}><Close /></button>
           </div>
           <ol>
-            <li>Each round, every agent gets one turn as the clue-giver: 60 seconds to get as many words cracked as possible.</li>
-            <li>Describe each secret word without using any of its letters. Banned letters are locked.</li>
-            <li>Words get harder as you go: each one bans more letters than the last.</li>
+            <li>Each round, every agent gets one turn as the clue-giver: {DEFAULT_TURN_SECONDS} seconds to get as many words cracked as possible.</li>
+            <li>Describe each secret word without using any of its letters. Banned letters are locked on your keyboard.</li>
+            <li>Every word has 3 to 5 different letters, so 3 to 5 keys are locked each time.</li>
             <li>Everyone else guesses as often as they like. Wrong guesses are visible to all.</li>
             <li>The first agent to crack a word wins a point, and so does the clue-giver. Then the next word appears.</li>
             <li>Stuck? You get one pass per turn.</li>
           </ol>
           <div className="tip">
-            <strong>Tip:</strong> Watch which letters the clue-giver avoids. They might be in the word. And watch the
-            letters they use: the word can't contain any of them.
+            <strong>Tip:</strong> Watch which letters the clue-giver avoids. They might be in the word. Letters they
+            do use can't be in it, so they fade on your keyboard.
           </div>
         </section>
       )}
@@ -80,13 +82,15 @@ export function Home({ onEnter, notice }: { onEnter: (e: Entered) => void; notic
         <p style={{ margin: 0, fontSize: 16, lineHeight: 1.4 }}><b>Your mission:</b> describe each word without any of its letters.</p>
       </div>
 
-      <div className="card tilt" style={{ padding: 16 }} aria-label="Example briefing">
+      <div className="card tilt" style={{ padding: '12px 14px', gap: 6 }} aria-label="Example briefing">
         <div className="label manila">Example briefing</div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span className="typed" style={{ fontSize: 22, marginRight: 6 }}>HORSE</span>
-          {Array.from({ length: 5 }, (_, i) => <span key={i} style={{ width: 18, height: 22, background: 'var(--ink)' }} />)}
+        <div style={{ fontSize: 15, lineHeight: 1.45, display: 'flex', flexWrap: 'wrap', columnGap: 12 }}>
+          {['BIG QUICK ANIMAL', 'NAAAY!', 'GIDDY-UP!'].map((c) => <span key={c} style={{ whiteSpace: 'nowrap' }}>&gt; {c}</span>)}
         </div>
-        <div style={{ fontSize: 15, lineHeight: 1.45 }}>&gt; BIG QUICK ANIMAL<br />&gt; NAAAY!<br />&gt; GIDDY-UP!</div>
+        <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+          <span className="typed" style={{ fontSize: 20, marginRight: 6 }}>= HORSE</span>
+          {Array.from({ length: 5 }, (_, i) => <span key={i} style={{ width: 14, height: 18, background: 'var(--ink)' }} />)}
+        </div>
       </div>
 
       <form style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 4 }} onSubmit={(e) => { e.preventDefault(); go(code ? 'join_room' : 'create_room'); }}>
@@ -114,7 +118,7 @@ export function Home({ onEnter, notice }: { onEnter: (e: Entered) => void; notic
       </form>
 
       <div className="bottom" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <span className="muted" style={{ fontSize: 12, lineHeight: 1.4 }}>3 to 10 agents<br />Friends only</span>
+        <span className="muted" style={{ fontSize: 12, lineHeight: 1.4 }}>{MIN_AGENTS} to {MAX_AGENTS} agents<br />Friends only</span>
         <Stamp rotate={-8} size={20}>TOP SECRET</Stamp>
       </div>
     </main>

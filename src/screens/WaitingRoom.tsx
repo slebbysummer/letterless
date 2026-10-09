@@ -5,6 +5,8 @@ import { referee } from '../lib/api.ts';
 import { agent, type View } from '../lib/derive.ts';
 import { MAX_AGENTS, MIN_AGENTS, ROUND_OPTIONS, TURN_OPTIONS } from '../../supabase/functions/_shared/rules.ts';
 
+const turnLabel = (secs: number) => (secs % 60 === 0 && secs > 60 ? `${secs / 60} min` : `${secs}s`);
+
 export function WaitingRoom({ v, onLeave }: { v: View; onLeave: () => void }) {
   const { room, active, me, isHost } = v;
   const [error, setError] = useState('');
@@ -12,6 +14,16 @@ export function WaitingRoom({ v, onLeave }: { v: View; onLeave: () => void }) {
   const [busy, setBusy] = useState(false);
   const host = active.find((p) => p.id === room.host_player_id);
   const enough = active.length >= MIN_AGENTS;
+
+  const shareText = `Join my Letterless case: ${room.code}`;
+  const shareUrl = `${location.origin}/?case=${room.code}`;
+  const share = async () => {
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Letterless', text: shareText, url: shareUrl }); } catch { /* closed the sheet */ }
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, '_blank', 'noopener');
+    }
+  };
 
   const copy = async () => {
     try {
@@ -30,13 +42,13 @@ export function WaitingRoom({ v, onLeave }: { v: View; onLeave: () => void }) {
     setBusy(false);
   };
 
-  const Setting = ({ label, options, value, field, suffix = '' }: { label: string; options: readonly number[]; value: number; field: string; suffix?: string }) => (
+  const Setting = ({ label, options, value, field, format }: { label: string; options: readonly number[]; value: number; field: string; format: (n: number) => string }) => (
     <div className="row" style={{ gap: 12 }}>
       <span style={{ fontSize: 15 }}>{label}</span>
       <div className="segmented" role="group" aria-label={label}>
         {options.map((o) => (
           <button key={o} type="button" aria-pressed={o === value} disabled={!isHost || busy}
-            onClick={() => o !== value && act('update_settings', { [field]: o })}>{o}{suffix}</button>
+            onClick={() => o !== value && act('update_settings', { [field]: o })}>{format(o)}</button>
         ))}
       </div>
     </div>
@@ -57,7 +69,10 @@ export function WaitingRoom({ v, onLeave }: { v: View; onLeave: () => void }) {
             {copied ? <span style={{ fontSize: 11, fontWeight: 700 }}>OK</span> : <Copy />}
           </button>
         </div>
-        <div style={{ fontSize: 14, color: 'var(--manila-text)' }}>{copied ? 'Copied. ' : ''}Send this to your agents so they can join.</div>
+        <div className="row" style={{ alignItems: 'center' }}>
+          <div style={{ fontSize: 14, color: 'var(--manila-text)' }}>{copied ? 'Copied. ' : ''}Send this to your agents so they can join.</div>
+          <button type="button" className="btn ghost" style={{ height: 40, fontSize: 15, padding: '0 14px', flexShrink: 0 }} onClick={share}>Share</button>
+        </div>
       </section>
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -77,8 +92,8 @@ export function WaitingRoom({ v, onLeave }: { v: View; onLeave: () => void }) {
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div className="label">Mission settings {isHost ? '(host)' : `(set by ${agent(host)})`}</div>
-        <Setting label="Rounds" options={ROUND_OPTIONS} value={room.rounds} field="rounds" />
-        <Setting label="Turn length" options={TURN_OPTIONS} value={room.turn_seconds} field="turn_seconds" suffix="s" />
+        <Setting label="Rounds" options={ROUND_OPTIONS} value={room.rounds} field="rounds" format={String} />
+        <Setting label="Turn length" options={TURN_OPTIONS} value={room.turn_seconds} field="turn_seconds" format={turnLabel} />
         <div className="muted small" style={{ lineHeight: 1.4 }}>
           Every agent gives clues once per round, cracking as many words as they can. One pass per turn. Emoji are redacted.
         </div>

@@ -89,7 +89,7 @@ button:disabled { cursor: default; }
 .send-row .btn { height: 50px; font-size: 17px; padding: 0 18px; }
 
 .segmented { display: flex; border: 2px solid var(--ink); border-radius: 2px; }
-.segmented button { width: 48px; height: 44px; border: none; background: transparent; font-family: var(--mono); font-size: 16px; color: var(--ink); }
+.segmented button { min-width: 48px; padding: 0 8px; height: 44px; border: none; background: transparent; font-family: var(--mono); font-size: 16px; color: var(--ink); }
 .segmented button[aria-pressed='true'] { background: var(--ink); color: var(--paper); font-weight: 700; }
 .segmented button:disabled:not([aria-pressed='true']) { color: var(--muted); }
 
@@ -168,3 +168,43 @@ button:disabled { cursor: default; }
 /* Text fields: a quieter focus ring than buttons (the red border is reserved for locked-key warnings). */
 .field:focus-visible, .case-input:focus-visible { outline: 2px solid var(--rule); outline-offset: 2px; }
 .codename:focus-within { outline-color: var(--rule); outline-width: 2px; }
+
+/* ---------- in-game screens fit the phone exactly; only the feeds scroll */
+.screen.fit { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; gap: 10px; padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+.scroll { overflow-y: auto; min-height: 0; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.grow { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.compose { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.compose .note-row { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; min-height: 1.3em; }
+
+.draft { display: flex; align-items: center; gap: 1px; overflow: hidden; white-space: pre; height: 46px; cursor: default; flex: none; }
+.draft .placeholder { color: var(--rule); }
+.draft .caret { width: 2px; height: 22px; background: var(--ink); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.keyboard { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; user-select: none; -webkit-user-select: none; }
+.key-row { display: flex; gap: 4px; justify-content: center; }
+.key {
+  flex: 1 1 0; max-width: 40px; height: 44px; padding: 0; border: 1.5px solid var(--ink); border-radius: 3px;
+  background: var(--paper-light); color: var(--ink); font-family: var(--mono); font-weight: 700; font-size: 17px;
+  touch-action: manipulation;
+}
+.key:active:not(:disabled) { background: var(--manila); }
+.key.locked { background: var(--ink); color: var(--paper); text-decoration: line-through; text-decoration-thickness: 2px; }
+.key.dim { color: #b5ad9e; border-color: #b5ad9e; border-style: dashed; background: transparent; }
+.key.wide { max-width: 58px; flex-grow: 1.5; }
+.key.punct { max-width: 34px; }
+.key.space { max-width: none; flex-grow: 3; font-weight: 400; font-size: 14px; }
+.key.submit { max-width: none; flex-grow: 2.5; background: var(--ink); color: var(--paper); font-family: var(--type); font-weight: 400; font-size: 17px; }
+.key.submit:disabled { background: #6b675f; color: #d9d1bf; border-color: #6b675f; }
+.key:disabled:not(.submit) { opacity: 0.45; }
+
+.feed > div { padding: 6px 0; }
+.clue-feed { font-size: 17px; line-height: 1.45; font-weight: 700; overflow-wrap: anywhere; }
+
+@media (max-height: 700px) {
+  .screen.fit { gap: 7px; }
+  .key { height: 38px; font-size: 15px; }
+  .draft { height: 40px; }
+  .timer { font-size: 26px; }
+  .card { padding: 10px 12px; gap: 8px; }
+}

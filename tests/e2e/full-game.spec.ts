@@ -47,9 +47,19 @@ async function readSecret(page: Page, previous: string): Promise<string> {
 const clueFor = (word: string) =>
   [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].filter((c) => !word.includes(c)).slice(0, 6).join('') + '!';
 
+// Types on a laptop keyboard (the on-screen keys are tapped separately below).
 async function guess(a: Agent, text: string) {
-  await a.page.locator('#guess').fill(text);
-  await a.page.locator('#guess').press('Enter');
+  await a.page.keyboard.type(text);
+  await a.page.keyboard.press('Enter');
+}
+
+async function tap(page: Page, keys: string[]) {
+  for (const k of keys) await page.getByRole('button', { name: k, exact: true }).click();
+}
+
+async function fitsScreen(page: Page) {
+  const overflow = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
+  expect(overflow).toBeLessThanOrEqual(1);
 }
 
 async function rest(page: Page, path: string, init: RequestInit = {}) {
@@ -92,14 +102,18 @@ test('four agents play a full mission', async ({ browser }) => {
     await a.page.locator('#code').fill(code.toLowerCase());
     await a.page.getByRole('button', { name: 'Join' }).click();
     await expect(a.page.getByText('Waiting room')).toBeVisible();
+    if (a.name === 'Moth') await expect(fox.page.getByRole('button', { name: 'Begin mission' })).toBeEnabled(); // 2 is enough
   }
-  await expect(fox.page.getByText('4 / 10')).toBeVisible();
+  await expect(fox.page.getByText('4 / 8')).toBeVisible();
+  await expect(fox.page.getByRole('group', { name: 'Turn length' }).getByRole('button', { name: '90s' }))
+    .toHaveAttribute('aria-pressed', 'true');
+  await expect(fox.page.getByRole('button', { name: 'Share' })).toBeVisible();
   await expect(byName('Moth').page.getByRole('button', { name: 'Waiting for the host' })).toBeDisabled();
 
-  // ---- Host settings: 1 round, 45s
+  // ---- Host settings: 1 round, 60s
   await fox.page.getByRole('group', { name: 'Rounds' }).getByRole('button', { name: '1' }).click();
-  await fox.page.getByRole('group', { name: 'Turn length' }).getByRole('button', { name: '45s' }).click();
-  await expect(byName('Wren').page.getByRole('group', { name: 'Turn length' }).getByRole('button', { name: '45s' }))
+  await fox.page.getByRole('group', { name: 'Turn length' }).getByRole('button', { name: '60s' }).click();
+  await expect(byName('Wren').page.getByRole('group', { name: 'Turn length' }).getByRole('button', { name: '60s' }))
     .toHaveAttribute('aria-pressed', 'true');
   await shot(fox.page, '2-waiting-room');
   await fox.page.getByRole('button', { name: 'Begin mission' }).click();
@@ -126,7 +140,7 @@ test('four agents play a full mission', async ({ browser }) => {
     const write = await rest(guessers[0].page, 'clues', { method: 'POST', body: JSON.stringify({ text: 'HI' }) });
     expect(write.status).toBeGreaterThanOrEqual(400);
 
-    await expect(giver.page.locator('#clue')).toBeEnabled({ timeout: 10_000 });
+    await expect(giver.page.getByRole('button', { name: 'Space' })).toBeEnabled({ timeout: 10_000 });
 
     if (t === 0) {
       // A latecomer becomes a spectator
@@ -138,20 +152,34 @@ test('four agents play a full mission', async ({ browser }) => {
 
     let turnCracked = 0;
     for (let k = 0; k < 3; k++) {
-      // Locked key: a banned letter does nothing and explains why
-      await giver.page.locator('#clue').pressSequentially(word[0].toLowerCase());
-      await expect(giver.page.locator('#clue-note')).toContainText(`${word[0]} is redacted. That key is locked.`);
-      await expect(giver.page.locator('#clue')).toHaveValue('');
+      // Locked keys: tapping or typing a banned letter does nothing and explains why
+      const banned = word[word.length - 1];
+      await giver.page.getByRole('button', { name: `${banned}, redacted` }).click();
+      await expect(giver.page.getByTestId('clue-note')).toContainText(`${banned} is redacted. That key is locked.`);
+      await giver.page.keyboard.press(word[0].toLowerCase());
+      await expect(giver.page.getByTestId('clue-note')).toContainText(`${word[0]} is redacted. That key is locked.`);
+      await giver.page.keyboard.press('7');
+      await expect(giver.page.getByTestId('clue-note')).toContainText('Numbers are redacted.');
+      await expect(giver.page.getByTestId('clue-draft')).toHaveText('Type a clue');
 
+      // First clue tapped on the on-screen keys, later ones typed on a laptop keyboard
       const clue = clueFor(word);
-      await giver.page.locator('#clue').fill(clue);
-      await giver.page.locator('#clue').press('Enter');
+      if (k === 0) {
+        await tap(giver.page, [...clue.slice(0, -1)]);
+        await giver.page.getByRole('button', { name: '!', exact: true }).click();
+        await giver.page.getByRole('button', { name: 'Send' }).click();
+      } else {
+        await giver.page.keyboard.type(clue);
+        await giver.page.keyboard.press('Enter');
+      }
       await expect(guessers[0].page.getByTestId('clues')).toContainText(clue);
+      // Guessers' keys fade for letters used in clues
+      await expect(guessers[0].page.getByRole('button', { name: `${clue[0]}, used in a clue` })).toBeVisible();
 
-      // A wrong guess is visible to everyone, including the giver
-      await guess(guessers[1], 'qwzx');
-      await expect(giver.page.locator('.list')).toContainText('qwzx');
-      await expect(guessers[2].page.locator('.list')).toContainText('qwzx');
+      // A wrong guess (tapped on-screen) is visible to everyone, including the giver
+      await tap(guessers[1].page, ['Q', 'W', 'Z', 'X', 'Guess']);
+      await expect(giver.page.getByTestId('guess-feed')).toContainText('qwzx');
+      await expect(guessers[2].page.getByTestId('guess-feed')).toContainText('qwzx');
 
       if (t === 0 && k === 1) {
         await giver.page.getByRole('button', { name: /Pass · 1 left/ }).click();
@@ -163,9 +191,13 @@ test('four agents play a full mission', async ({ browser }) => {
       }
 
       if (t === 0 && k === 2) {
-        await giver.page.locator('#clue').pressSequentially(word[0].toLowerCase());
+        await giver.page.keyboard.type('GR'.replace(/./g, (c) => (word.includes(c) ? '' : c)));
+        await giver.page.keyboard.press(word[0].toLowerCase());
         await shot(giver.page, '3-clue-giver');
         await shot(guessers[0].page, '4-guesser');
+        await fitsScreen(giver.page);
+        await fitsScreen(guessers[0].page);
+        for (let i = 0; i < 3; i++) await giver.page.keyboard.press('Backspace');
       }
 
       if (t === 1 && k === 1) {
@@ -224,13 +256,13 @@ test('four agents play a full mission', async ({ browser }) => {
   // ---- Play again: everyone (spectator included) is back in the waiting room
   await fox.page.getByRole('button', { name: 'Play again, same agents' }).click();
   for (const a of [...agents, spectator!]) await expect(a.page.getByText('Waiting room')).toBeVisible();
-  await expect(fox.page.getByText('5 / 10')).toBeVisible();
+  await expect(fox.page.getByText('5 / 8')).toBeVisible();
 
   // ---- Host leaves: hosting passes to the next agent in turn order
   await fox.page.getByRole('button', { name: '< Leave case' }).click();
   await expect(fox.page.getByRole('button', { name: 'Open a new case' })).toBeVisible();
   const moth = byName('Moth').page;
-  await expect(moth.getByText('4 / 10')).toBeVisible();
+  await expect(moth.getByText('4 / 8')).toBeVisible();
   await expect(moth.locator('.agents > div').filter({ hasText: 'Agent Moth' })).toContainText('HOST');
   await expect(moth.getByRole('button', { name: 'Begin mission' })).toBeEnabled();
 });

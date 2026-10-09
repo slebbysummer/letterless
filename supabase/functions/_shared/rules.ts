@@ -2,12 +2,13 @@
 // function (the real check). Keep this file free of browser/Deno-only APIs.
 import { hasBannedWord, isBannedCodename } from './profanity.ts';
 
-export const MIN_AGENTS = 3;
-export const MAX_AGENTS = 10;
+export const MIN_AGENTS = 2;
+export const MAX_AGENTS = 8;
 export const CLUE_MAX = 40;
 export const GUESS_MAX = 20;
 export const ROUND_OPTIONS = [1, 2, 3] as const;
-export const TURN_OPTIONS = [45, 60, 90] as const;
+export const TURN_OPTIONS = [60, 90, 120] as const;
+export const DEFAULT_TURN_SECONDS = 90;
 export const BRIEFING_SECONDS = 3;
 export const REPORT_SECONDS = 5;
 export const CODE_LENGTH = 5;
@@ -16,14 +17,12 @@ export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
 const CLUE_CHAR = /^[A-Z !?,.'-]$/;
 
+/** Punctuation keys on the clue keyboard. */
+export const CLUE_PUNCTUATION = ['!', '?', ',', '.', "'", '-'] as const;
+
 /** Distinct letters of a word, in the order they first appear (MONSTER -> M,O,N,S,T,E,R). */
 export function bannedLetters(word: string): string[] {
   return [...new Set(word.toUpperCase())];
-}
-
-/** Ladder: 1st word level 1, 2nd level 2, 3rd level 3, then level 4. Passes don't climb. */
-export function ladderLevel(crackedSoFar: number): number {
-  return Math.min(4, crackedSoFar + 1);
 }
 
 export function validateCodename(raw: string): Result<string> {

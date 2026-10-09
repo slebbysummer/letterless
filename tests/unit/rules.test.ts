@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { hasBannedWord, isBannedCodename } from '../../supabase/functions/_shared/profanity.ts';
 import {
-  bannedLetters, clueCharProblem, ladderLevel, normalizeCaseCode, validateClue, validateCodename, validateGuess,
+  bannedLetters, clueCharProblem, normalizeCaseCode, validateClue, validateCodename, validateGuess,
 } from '../../supabase/functions/_shared/rules.ts';
 
 const words = readFileSync(new URL('../../data/words.csv', import.meta.url), 'utf8')
@@ -19,13 +19,13 @@ describe('word list', () => {
   });
 });
 
-describe('banned letters and ladder', () => {
+describe('banned letters', () => {
   it('lists distinct letters in order', () => {
     expect(bannedLetters('MONSTER')).toEqual(['M', 'O', 'N', 'S', 'T', 'E', 'R']);
     expect(bannedLetters('banana')).toEqual(['B', 'A', 'N']);
   });
-  it('climbs one level per cracked word and caps at 4', () => {
-    expect([0, 1, 2, 3, 4, 9].map(ladderLevel)).toEqual([1, 2, 3, 4, 4, 4]);
+  it('has enough 3-5 banned-letter words for a long game', () => {
+    expect(words.filter((w) => Number(w[1]) >= 3 && Number(w[1]) <= 5).length).toBe(245);
   });
 });
 

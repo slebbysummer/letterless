@@ -72,7 +72,7 @@ const actions: Record<string, (user: string, b: Body) => Promise<Record<string, 
     const rounds = b.rounds == null ? null : Number(b.rounds);
     const secs = b.turn_seconds == null ? null : Number(b.turn_seconds);
     if (rounds !== null && !(ROUND_OPTIONS as readonly number[]).includes(rounds)) throw new UserError('Rounds must be 1, 2 or 3.');
-    if (secs !== null && !(TURN_OPTIONS as readonly number[]).includes(secs)) throw new UserError('Turn length must be 45, 60 or 90 seconds.');
+    if (secs !== null && !(TURN_OPTIONS as readonly number[]).includes(secs)) throw new UserError('Turn length must be 60, 90 or 120 seconds.');
     return rpc('ll_update_settings', { p_user: user, p_room: uuid(b.room_id), p_rounds: rounds, p_turn_seconds: secs });
   },
 
