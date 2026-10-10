@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react';
 import type { Game, Turn } from '../lib/types.ts';
 import { formatClock, secondsLeft, useNow } from '../lib/useNow.ts';
 
-export function TurnHeader({ game, turn, who }: { game: Game; turn: Turn; who: string }) {
+export function TurnHeader({ game, turn, who, menu }: { game: Game; turn: Turn; who: string; menu?: ReactNode }) {
   const now = useNow();
   const left = secondsLeft(turn.phase_ends_at, now);
   const briefing = turn.phase === 'briefing';
@@ -15,9 +16,12 @@ export function TurnHeader({ game, turn, who }: { game: Game; turn: Turn; who: s
           <span className="label">Round {turn.round} of {game.rounds} · Turn {turn.turn_no} of {game.turn_order.length}</span>
           <span className="who">{who}</span>
         </div>
-        <span className="timer" role="timer" aria-label={`${left} seconds left`}>
-          {briefing ? <span className="timer small-label">BRIEFING {left}</span> : formatClock(left)}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span className="timer" role="timer" aria-label={briefing ? `Briefing, ${left} seconds` : `${left} seconds left`}>
+            {formatClock(left)}
+          </span>
+          {menu}
+        </div>
       </div>
       <div className="progress" aria-hidden="true"><div style={{ width: `${pct}%` }} /></div>
     </>

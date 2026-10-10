@@ -99,10 +99,10 @@ export function Home({ onEnter, notice }: { onEnter: (e: Entered) => void; notic
               onClick={(e) => { e.preventDefault(); go('join_room'); }}>Join</button>
           </div>
         </div>
-        <div className="error" role="alert">{error}</div>
+        {error && <div className="error" role="alert">{error}</div>}
       </form>
 
-      <div className="row" style={{ alignItems: 'flex-end', marginTop: 12 }}>
+      <div className="row" style={{ alignItems: 'center', marginTop: 4 }}>
         <span className="muted" style={{ fontSize: 12, lineHeight: 1.4 }}>{MIN_AGENTS} to {MAX_AGENTS} agents<br />Friends only</span>
         <Stamp rotate={-8} size={20}>TOP SECRET</Stamp>
       </div>

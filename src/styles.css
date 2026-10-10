@@ -109,8 +109,8 @@ button:disabled { cursor: default; }
 /* ---------- turn header */
 .turn-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .turn-head .who { font-size: 15px; font-weight: 700; }
+.turn-head .timer { white-space: nowrap; }
 .timer { font-family: var(--type); font-size: 30px; color: var(--red); line-height: 1; font-variant-numeric: tabular-nums; }
-.timer.small-label { font-size: 13px; letter-spacing: 0.12em; }
 .progress { height: 6px; background: var(--track); border-radius: 3px; overflow: hidden; }
 .progress > div { height: 100%; background: var(--ink); transition: width 0.25s linear; }
 
@@ -264,3 +264,15 @@ button:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) {
   .nudge, .clue-feed.latest-first > div.latest, .draft .caret { animation: none; }
 }
+
+/* ---------- in-game menu */
+.menu-btn { width: 40px; height: 40px; margin-right: -8px; }
+.menu-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(27, 26, 23, 0.45); display: flex; align-items: flex-end; justify-content: center; }
+.menu-sheet {
+  width: 100%; max-width: 430px; background: var(--paper-light); border-top: 2px solid var(--ink); color: var(--ink);
+  text-transform: none; letter-spacing: normal; font-size: 15px; text-align: left;
+  padding: 16px 20px max(20px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px;
+}
+.menu-text { margin: 0; font-size: 15px; line-height: 1.45; }
+.btn.danger { color: var(--red); border-color: var(--red); }
+.btn.danger-fill { background: var(--red); }

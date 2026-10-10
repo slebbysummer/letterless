@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Draft, Keyboard, useDraft } from '../components/Keyboard.tsx';
 import { Stamp } from '../components/Stamp.tsx';
+import { GameMenu } from '../components/GameMenu.tsx';
 import { TurnHeader } from '../components/TurnHeader.tsx';
 import { referee } from '../lib/api.ts';
 import { agent, pointsFor, type View } from '../lib/derive.ts';
 import type { Turn } from '../lib/types.ts';
 import { GUESS_MAX } from '../../supabase/functions/_shared/rules.ts';
 
-export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn> }) {
+export function GuesserTurn({ v, turns, onLeave }: { v: View; turns: Record<string, Turn>; onLeave: () => void }) {
   const { game, turn, word, room, me, byId } = v;
   const draft = useDraft();
   const [note, setNote] = useState('');
@@ -39,7 +40,7 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
 
   return (
     <main className="screen fit">
-      <TurnHeader game={game} turn={turn} who={`${agent(giver)} is describing`} />
+      <TurnHeader game={game} turn={turn} who={`${agent(giver)} is describing`} menu={<GameMenu v={v} onLeave={onLeave} />} />
 
       {last?.revealed_word && (
         <div className="dashed row" style={{ flexShrink: 0, padding: '6px 12px' }} data-testid="last-word">

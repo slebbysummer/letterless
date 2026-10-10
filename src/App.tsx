@@ -142,9 +142,9 @@ function RoomScreen({ entry, userId, onLeave, onGone }: {
   } else if (v.room.status === 'finished' && v.game) {
     screen = <Debrief v={v} turns={state.turns} onLeave={onLeave} />;
   } else if (v.room.status === 'playing' && v.game && v.turn) {
-    if (v.turn.phase === 'report' || v.turn.phase === 'done') screen = <BetweenTurns v={v} />;
-    else if (v.isGiver) screen = <ClueGiverTurn v={v} />;
-    else screen = <GuesserTurn v={v} turns={state.turns} />;
+    if (v.turn.phase === 'report' || v.turn.phase === 'done') screen = <BetweenTurns v={v} onLeave={onLeave} />;
+    else if (v.isGiver) screen = <ClueGiverTurn v={v} onLeave={onLeave} />;
+    else screen = <GuesserTurn v={v} turns={state.turns} onLeave={onLeave} />;
   } else {
     screen = <Message text="Opening case file…" />;
   }

@@ -128,6 +128,15 @@ docs/                    brief, spec and design references
   - The How to play stamp wiggles until a player opens it for the first time.
 - **Home page:** the example briefing ends with "= HORSE" on the right, and the footer sits closer to the form.
 
+## Changes after the fourth playtest
+
+- **In-game menu (☰):** next to the timer on every game screen.
+  - Any agent can leave the case. Their score stays, marked as left.
+  - The host can end the mission for everyone, which goes straight to the debrief.
+- **How to play:** a new Clue-giver tip about using dashes for banned letters, and the faded-keys tip is now labelled Guesser tip.
+- **Briefing timer:** shows a plain 0:03 countdown.
+- **Home page:** the footer sits right under the case number box.
+
 ## Rules decisions made during the build
 
 - **Turn order** is the order agents joined. **Rounds** default to 2.

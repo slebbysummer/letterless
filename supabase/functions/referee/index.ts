@@ -88,6 +88,7 @@ const actions: Record<string, (user: string, b: Body) => Promise<Record<string, 
   advance: (user, b) => rpc('ll_advance', { p_user: user, p_room: uuid(b.room_id) }),
   leave: (user, b) => rpc('ll_leave', { p_user: user, p_room: uuid(b.room_id) }),
   play_again: (user, b) => rpc('ll_play_again', { p_user: user, p_room: uuid(b.room_id) }),
+  end_game: (user, b) => rpc('ll_end_game', { p_user: user, p_room: uuid(b.room_id) }),
 };
 
 Deno.serve(async (req) => {

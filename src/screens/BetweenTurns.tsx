@@ -1,8 +1,9 @@
+import { GameMenu } from '../components/GameMenu.tsx';
 import { Stamp } from '../components/Stamp.tsx';
 import { agent, type View } from '../lib/derive.ts';
 import { secondsLeft, useNow } from '../lib/useNow.ts';
 
-export function BetweenTurns({ v }: { v: View }) {
+export function BetweenTurns({ v, onLeave }: { v: View; onLeave: () => void }) {
   const { game, turn, room, me, byId } = v;
   const now = useNow();
   if (!game || !turn) return null;
@@ -16,7 +17,7 @@ export function BetweenTurns({ v }: { v: View }) {
     <main className="screen roomy" style={{ paddingTop: 36 }}>
       <div className="row label">
         <span>Round {turn.round} of {game.rounds} · Turn {turn.turn_no} of {game.turn_order.length}</span>
-        <span>Case {room.code}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Case {room.code}<GameMenu v={v} onLeave={onLeave} /></span>
       </div>
 
       <section className="card" style={{ padding: 18, gap: 12 }} data-testid="turn-report">

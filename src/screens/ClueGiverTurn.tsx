@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Draft, Keyboard, useDraft } from '../components/Keyboard.tsx';
+import { GameMenu } from '../components/GameMenu.tsx';
 import { TurnHeader } from '../components/TurnHeader.tsx';
 import { referee } from '../lib/api.ts';
 import { agent, type View } from '../lib/derive.ts';
 import { bannedLetters, CLUE_MAX, CLUE_PUNCTUATION, clueCharProblem } from '../../supabase/functions/_shared/rules.ts';
 
-export function ClueGiverTurn({ v }: { v: View }) {
+export function ClueGiverTurn({ v, onLeave }: { v: View; onLeave: () => void }) {
   const { game, turn, word, secret, room, me, byId } = v;
   const draft = useDraft();
   const clue = draft.text;
@@ -49,7 +50,7 @@ export function ClueGiverTurn({ v }: { v: View }) {
 
   return (
     <main className="screen fit">
-      <TurnHeader game={game} turn={turn} who={`Your turn, ${agent(me)}`} />
+      <TurnHeader game={game} turn={turn} who={`Your turn, ${agent(me)}`} menu={<GameMenu v={v} onLeave={onLeave} />} />
 
       <div className="row" style={{ flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>

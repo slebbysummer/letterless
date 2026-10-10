@@ -85,11 +85,15 @@ test('four agents play a full mission', async ({ browser }) => {
   await expect(howto).toContainText('case number');
   await expect(fox.page.getByRole('button', { name: 'Previous rule' })).toHaveCount(0);
   await shot(fox.page, '1b-how-to-play');
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     await fox.page.getByRole('button', { name: 'Next rule' }).click();
     if (i === 1) {
       await expect(howto).toContainText("to describe HORSE you can't use H, O, R, S or E");
       await shot(fox.page, '1c-how-to-play-horse');
+    }
+    if (i === 5) {
+      await expect(howto).toContainText('GALL-P could mean GALLOP');
+      await shot(fox.page, '1d-how-to-play-dash');
     }
   }
   await expect(howto).toContainText('these letters fade on your keyboard');

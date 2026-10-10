@@ -87,7 +87,17 @@ const STEPS: { title: string; text: ReactNode; visual: ReactNode }[] = [
     ),
   },
   {
-    title: 'Tip',
+    title: 'Clue-giver tip',
+    text: <>Punctuation is never locked, so a dash can stand in for a banned letter. Describing HORSE? GALL-P could mean GALLOP.</>,
+    visual: (
+      <div className="howto-visual">
+        <div style={{ fontWeight: 700, fontSize: 22 }}>&gt; GALL-P!</div>
+        <MiniKeys rows={["!?,.'-"]} />
+      </div>
+    ),
+  },
+  {
+    title: 'Guesser tip',
     text: <>Letters in any of the words your clue-giver sends can't be in their word, so these letters fade on your keyboard.</>,
     visual: (
       <div className="howto-visual">
