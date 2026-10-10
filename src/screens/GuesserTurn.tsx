@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Draft, Keyboard } from '../components/Keyboard.tsx';
+import { Draft, Keyboard, useDraft } from '../components/Keyboard.tsx';
 import { Stamp } from '../components/Stamp.tsx';
 import { TurnHeader } from '../components/TurnHeader.tsx';
 import { referee } from '../lib/api.ts';
@@ -9,7 +9,7 @@ import { GUESS_MAX } from '../../supabase/functions/_shared/rules.ts';
 
 export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn> }) {
   const { game, turn, word, room, me, byId } = v;
-  const [guess, setGuess] = useState('');
+  const draft = useDraft();
   const [note, setNote] = useState('');
   if (!game || !turn || !me) return null;
 
@@ -22,11 +22,13 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
   const myPoints = pointsFor(me.id, v.gameWords, turns);
   // Letters the clue-giver has used can't be in the word: dim them as a hint.
   const used = new Set(v.clues.flatMap((c) => [...c.text]).filter((ch) => /[A-Z]/.test(ch)));
+  // Newest clue first: it's what guessers need most, and it never scrolls out of view.
+  const clues = [...v.clues].reverse();
 
   const send = async () => {
-    const text = guess;
+    const text = draft.text;
     if (!text) return;
-    setGuess('');
+    draft.set('');
     try {
       const res = await referee<{ correct: boolean; late?: boolean }>('guess', { room_id: room.id, text });
       setNote(res.late ? 'Too slow! That one was just cracked.' : '');
@@ -56,7 +58,7 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
         </div>
       )}
 
-      <section className="card" style={{ flex: '3 1 0', minHeight: 110 }}>
+      <section className="card" style={{ flex: '1 1 0', minHeight: 100 }}>
         <div className="row label manila">
           <span>Word {word?.seq ?? '·'} · {word ? `${word.length} letters` : 'loading'}</span>
           <span>{cracked} cracked</span>
@@ -65,20 +67,24 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
           {Array.from({ length: word?.length ?? 0 }, (_, i) => <span key={i} />)}
         </div>
         <div className="scroll" style={{ flex: 1 }}>
-          {v.clues.length === 0
+          {clues.length === 0
             ? <div className="clues empty">{briefing ? `${agent(giver)} is reading the briefing…` : 'Waiting for the first clue…'}</div>
-            : <div className="clue-feed" data-testid="clues">{v.clues.map((c) => <div key={c.id}>&gt; {c.text}</div>)}</div>}
+            : (
+              <div className="clue-feed latest-first" data-testid="clues" aria-live="polite">
+                {clues.map((c, i) => <div key={c.id} className={i === 0 ? 'latest' : undefined}>&gt; {c.text}</div>)}
+              </div>
+            )}
         </div>
       </section>
 
-      <section className="grow" style={{ flex: '2 1 0' }}>
+      <section style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div className="row label"><span>Wrong guesses</span>{!spectator && <span>Your points: {myPoints}</span>}</div>
-        <div className="list scroll" data-testid="guess-feed">
+        <div className="guess-strip" data-testid="guess-feed">
+          {wrong.length === 0 && <span className="muted" style={{ border: 'none', padding: 0 }}>None yet</span>}
           {[...wrong].reverse().map((g) => (
-            <div key={g.id}>
-              <span>{agent(byId[g.player_id])}{g.player_id === me.id ? ' (you)' : ''}</span>
-              <span className="struck">{g.text.toLowerCase()}</span>
-            </div>
+            <span key={g.id}>
+              <s>{g.text.toLowerCase()}</s> <small>{g.player_id === me.id ? 'you' : byId[g.player_id]?.codename}</small>
+            </span>
           ))}
         </div>
       </section>
@@ -89,7 +95,8 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
         </div>
       ) : (
         <div className="compose">
-          <Draft text={guess.toLowerCase()} placeholder={briefing ? 'Get ready…' : 'Your guess'} testId="guess-draft" />
+          <Draft text={draft.text.toLowerCase()} cursor={draft.cursor} onCursor={draft.moveTo}
+            placeholder={briefing ? 'Get ready…' : 'Your guess'} testId="guess-draft" />
           <div className="note-row">
             <span className={note ? 'error' : 'muted'} role="status">
               {note || (used.size ? 'Faded keys are in the clues, so not in the word.' : 'First to crack it wins the point.')}
@@ -99,9 +106,10 @@ export function GuesserTurn({ v, turns }: { v: View; turns: Record<string, Turn>
             dimmed={used}
             submitLabel="Guess"
             disabled={briefing}
-            canSubmit={!briefing && !!guess}
-            onKey={(ch) => { setNote(''); setGuess((g) => (g.length < GUESS_MAX ? g + ch : g)); }}
-            onBackspace={() => setGuess((g) => g.slice(0, -1))}
+            canSubmit={!briefing && !!draft.text}
+            onKey={(ch) => { setNote(''); draft.insert(ch, GUESS_MAX); }}
+            onBackspace={draft.backspace}
+            onArrow={draft.move}
             onInvalid={() => setNote('Guesses are letters only.')}
             onSubmit={send}
           />

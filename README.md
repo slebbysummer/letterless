@@ -113,6 +113,21 @@ docs/                    brief, spec and design references
 - On-page keyboards replace the phone keyboard, so nothing gets covered. The clue-giver's banned letters are locked keys. On guessers' keyboards, letters the clue-giver has used are faded, because they can't be in the word.
 - The waiting room has a Share button that opens the phone's share sheet (WhatsApp and so on) with a link that pre-fills the case number.
 
+## Changes after the third playtest
+
+- **Words:** the pool is now 361 words (717 in the full list). No word repeats on the same case number, even across several games with Play again.
+- **Between turns** lasts 8 seconds (was 5).
+- **Keyboards:**
+  - Keys are phone-keyboard sized and register on touch-down.
+  - A pop-up shows each letter as you press it, and Delete repeats when held.
+  - Tap anywhere in what you've typed to move the cursor there and fix a letter. Arrow keys work on a laptop.
+- **Guessers:** the newest clue is shown first and largest. Wrong guesses are a compact strip, newest first, so clues never get pushed out of view.
+- **How to play:**
+  - It's a walkthrough with one rule per page, each with a small visual. Use the arrows or swipe to move between pages.
+  - It starts with how to open a case or join with a number.
+  - The How to play stamp wiggles until a player opens it for the first time.
+- **Home page:** the example briefing ends with "= HORSE" on the right, and the footer sits closer to the form.
+
 ## Rules decisions made during the build
 
 - **Turn order** is the order agents joined. **Rounds** default to 2.

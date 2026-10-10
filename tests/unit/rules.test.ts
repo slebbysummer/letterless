@@ -9,9 +9,9 @@ const words = readFileSync(new URL('../../data/words.csv', import.meta.url), 'ut
   .trim().split('\n').slice(1).map((l) => l.split(','));
 
 describe('word list', () => {
-  it('has the original 500 words plus 102 easy additions, no duplicates', () => {
-    expect(words).toHaveLength(602);
-    expect(new Set(words.map((w) => w[0])).size).toBe(602);
+  it('has the original 500 words plus 217 easy additions, no duplicates', () => {
+    expect(words).toHaveLength(717);
+    expect(new Set(words.map((w) => w[0])).size).toBe(717);
   });
   it('records the right banned-letter count for every word', () => {
     for (const [w, banned] of words) expect(bannedLetters(w).length, w).toBe(Number(banned));
@@ -26,8 +26,8 @@ describe('banned letters', () => {
     expect(bannedLetters('MONSTER')).toEqual(['M', 'O', 'N', 'S', 'T', 'E', 'R']);
     expect(bannedLetters('banana')).toEqual(['B', 'A', 'N']);
   });
-  it('has a 246-word easy pool that never bans more than two vowels', () => {
-    expect(words.filter((w) => inWordPool(w[0])).length).toBe(246);
+  it('has a 361-word easy pool that never bans more than two vowels', () => {
+    expect(words.filter((w) => inWordPool(w[0])).length).toBe(361);
     expect(inWordPool('SHARK')).toBe(true);   // 1 vowel, 5 banned
     expect(inWordPool('CAKE')).toBe(true);    // 2 vowels, 4 banned
     expect(inWordPool('HORSE')).toBe(false);  // 2 vowels, 5 banned

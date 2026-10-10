@@ -10,7 +10,7 @@ export const ROUND_OPTIONS = [1, 2, 3] as const;
 export const TURN_OPTIONS = [60, 90, 120] as const;
 export const DEFAULT_TURN_SECONDS = 90;
 export const BRIEFING_SECONDS = 3;
-export const REPORT_SECONDS = 5;
+export const REPORT_SECONDS = 8;
 export const CODE_LENGTH = 5;
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };

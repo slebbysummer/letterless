@@ -79,9 +79,22 @@ test('four agents play a full mission', async ({ browser }) => {
   const [fox] = agents;
   const byName = (n: string) => agents.find((a) => a.name === n)!;
   await shot(fox.page, '1-home');
+  // How to play: a walkthrough, one rule per page
   await fox.page.getByRole('button', { name: /HOW TO PLAY/ }).click();
+  const howto = fox.page.getByTestId('howto-step');
+  await expect(howto).toContainText('case number');
+  await expect(fox.page.getByRole('button', { name: 'Previous rule' })).toHaveCount(0);
   await shot(fox.page, '1b-how-to-play');
-  await fox.page.getByRole('button', { name: 'Close how to play' }).click();
+  for (let i = 0; i < 6; i++) {
+    await fox.page.getByRole('button', { name: 'Next rule' }).click();
+    if (i === 1) {
+      await expect(howto).toContainText("to describe HORSE you can't use H, O, R, S or E");
+      await shot(fox.page, '1c-how-to-play-horse');
+    }
+  }
+  await expect(howto).toContainText('these letters fade on your keyboard');
+  await fox.page.getByRole('button', { name: 'Got it' }).click();
+  await expect(howto).toHaveCount(0);
 
   // ---- Home: validation, then open a case
   await fox.page.locator('#agent').fill('F0x');
@@ -169,7 +182,11 @@ test('four agents play a full mission', async ({ browser }) => {
         await giver.page.getByRole('button', { name: '!', exact: true }).click();
         await giver.page.getByRole('button', { name: 'Send' }).click();
       } else {
-        await giver.page.keyboard.type(clue);
+        // Type all but the first letter, tap the start of the draft, then fix it
+        await giver.page.keyboard.type(clue.slice(1));
+        await giver.page.getByTestId('clue-draft').locator('.ch').first().click({ position: { x: 1, y: 5 } });
+        await giver.page.keyboard.type(clue[0]);
+        await expect(giver.page.getByTestId('clue-draft')).toHaveText(clue);
         await giver.page.keyboard.press('Enter');
       }
       await expect(guessers[0].page.getByTestId('clues')).toContainText(clue);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Draft, Keyboard } from '../components/Keyboard.tsx';
+import { Draft, Keyboard, useDraft } from '../components/Keyboard.tsx';
 import { TurnHeader } from '../components/TurnHeader.tsx';
 import { referee } from '../lib/api.ts';
 import { agent, type View } from '../lib/derive.ts';
@@ -7,11 +7,12 @@ import { bannedLetters, CLUE_MAX, CLUE_PUNCTUATION, clueCharProblem } from '../.
 
 export function ClueGiverTurn({ v }: { v: View }) {
   const { game, turn, word, secret, room, me, byId } = v;
-  const [clue, setClue] = useState('');
+  const draft = useDraft();
+  const clue = draft.text;
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   // A half-typed clue belongs to the old word: clear it when a new word appears.
-  useEffect(() => { setClue(''); setNote(''); }, [word?.id]);
+  useEffect(() => { draft.set(''); setNote(''); }, [word?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!game || !turn || !me) return null;
 
   const letters = secret ? bannedLetters(secret) : [];
@@ -22,22 +23,19 @@ export function ClueGiverTurn({ v }: { v: View }) {
 
   const type = (ch: string) => {
     setNote(clue.length >= CLUE_MAX ? `Clues are up to ${CLUE_MAX} characters.` : '');
-    setClue((c) => {
-      if (c.length >= CLUE_MAX || (ch === ' ' && (c === '' || c.endsWith(' ')))) return c;
-      return c + ch;
-    });
+    draft.insert(ch, CLUE_MAX);
   };
 
   const send = async () => {
     const text = clue.trim();
     if (!text || busy) return;
     setBusy(true);
-    setClue('');
+    draft.set('');
     try {
       await referee('send_clue', { room_id: room.id, text });
       setNote('');
     } catch (e) {
-      setClue(text);
+      draft.set(text);
       setNote((e as Error).message);
     }
     setBusy(false);
@@ -90,7 +88,7 @@ export function ClueGiverTurn({ v }: { v: View }) {
       </section>
 
       <div className="compose">
-        <Draft text={clue} placeholder={briefing ? 'Briefing…' : 'Type a clue'} alert={!!note} testId="clue-draft" />
+        <Draft text={clue} cursor={draft.cursor} onCursor={draft.moveTo} placeholder={briefing ? 'Briefing…' : 'Type a clue'} alert={!!note} testId="clue-draft" />
         <div className="note-row">
           <span className="error" role="status" data-testid="clue-note">{note}</span>
           <span className="muted" style={{ whiteSpace: 'nowrap' }}>{clue.length} / {CLUE_MAX}</span>
@@ -105,7 +103,8 @@ export function ClueGiverTurn({ v }: { v: View }) {
           onKey={type}
           onLocked={(ch) => setNote(`${ch} is redacted. That key is locked.`)}
           onInvalid={(ch) => setNote(clueCharProblem(ch, banned) ?? '')}
-          onBackspace={() => { setNote(''); setClue((c) => c.slice(0, -1)); }}
+          onBackspace={() => { setNote(''); draft.backspace(); }}
+          onArrow={draft.move}
           onSubmit={send}
         />
       </div>

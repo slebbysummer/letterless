@@ -176,35 +176,91 @@ button:disabled { cursor: default; }
 .compose { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
 .compose .note-row { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; min-height: 1.3em; }
 
-.draft { display: flex; align-items: center; gap: 1px; overflow: hidden; white-space: pre; height: 46px; cursor: default; flex: none; }
+.draft {
+  display: block; height: auto; min-height: 46px; padding: 10px 12px; line-height: 24px; flex: none; cursor: text;
+  white-space: pre-wrap; word-break: break-all; font-size: 18px;
+}
 .draft .placeholder { color: var(--rule); }
-.draft .caret { width: 2px; height: 22px; background: var(--ink); animation: blink 1s steps(1) infinite; }
+.draft .ch { display: inline; }
+.draft .caret { display: inline-block; width: 2px; height: 22px; margin: 0 -1px; vertical-align: -4px; background: var(--red); animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
-.keyboard { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; user-select: none; -webkit-user-select: none; }
-.key-row { display: flex; gap: 4px; justify-content: center; }
-.key {
-  flex: 1 1 0; max-width: 40px; height: 44px; padding: 0; border: 1.5px solid var(--ink); border-radius: 3px;
-  background: var(--paper-light); color: var(--ink); font-family: var(--mono); font-weight: 700; font-size: 17px;
-  touch-action: manipulation;
+/* Keyboard sized like a phone's own: ~10 keys across, 46px tall, big letters */
+.keyboard {
+  --gap: 6px; --kw: calc((100% - 9 * var(--gap)) / 10);
+  display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; margin: 0 -14px; padding: 8px 4px 2px;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
-.key:active:not(:disabled) { background: var(--manila); }
+.key-row { display: flex; gap: var(--gap); justify-content: center; }
+.key {
+  position: relative; flex: 0 0 var(--kw); height: 46px; padding: 0; border: 1.5px solid var(--ink); border-radius: 5px;
+  background: var(--paper-light); color: var(--ink); font-family: var(--mono); font-weight: 700; font-size: 22px;
+  touch-action: manipulation; box-shadow: 0 1.5px 0 var(--ink);
+}
+.key:active:not(:disabled) { background: var(--manila); transform: translateY(1px); box-shadow: none; }
 .key.locked { background: var(--ink); color: var(--paper); text-decoration: line-through; text-decoration-thickness: 2px; }
-.key.dim { color: #b5ad9e; border-color: #b5ad9e; border-style: dashed; background: transparent; }
-.key.wide { max-width: 58px; flex-grow: 1.5; }
-.key.punct { max-width: 34px; }
-.key.space { max-width: none; flex-grow: 3; font-weight: 400; font-size: 14px; }
-.key.submit { max-width: none; flex-grow: 2.5; background: var(--ink); color: var(--paper); font-family: var(--type); font-weight: 400; font-size: 17px; }
-.key.submit:disabled { background: #6b675f; color: #d9d1bf; border-color: #6b675f; }
+.key.dim { color: #b5ad9e; border-color: #b5ad9e; border-style: dashed; background: transparent; box-shadow: none; }
+.key.wide { flex-basis: calc(var(--kw) * 1.5 + var(--gap) / 2); font-size: 20px; }
+.bottom-row .key { flex: 1 1 0; }
+.key.punct { font-size: 22px; }
+.key.space { flex-grow: 2.4; font-weight: 400; font-size: 15px; }
+.key.submit { flex-grow: 2.4; background: var(--ink); color: var(--paper); font-family: var(--type); font-weight: 400; font-size: 19px; }
+.key.submit:disabled { background: #6b675f; color: #d9d1bf; border-color: #6b675f; box-shadow: none; }
 .key:disabled:not(.submit) { opacity: 0.45; }
+.key-pop {
+  position: absolute; left: 50%; bottom: calc(100% + 4px); transform: translateX(-50%); z-index: 30; pointer-events: none;
+  min-width: 48px; height: 56px; padding: 0 6px; display: flex; align-items: center; justify-content: center;
+  background: var(--paper-light); border: 1.5px solid var(--ink); border-radius: 6px; font-size: 32px;
+  box-shadow: 0 6px 14px rgba(27, 26, 23, 0.25);
+}
 
 .feed > div { padding: 6px 0; }
 .clue-feed { font-size: 17px; line-height: 1.45; font-weight: 700; overflow-wrap: anywhere; }
 
+/* Guesser: the newest clue leads, older ones shrink beneath it */
+.clue-feed.latest-first > div { font-size: 14px; font-weight: 700; color: var(--manila-text); opacity: 0.8; }
+.clue-feed.latest-first > div.latest { font-size: 21px; color: var(--ink); opacity: 1; padding-bottom: 2px; animation: arrive 0.6s ease-out; }
+@keyframes arrive { from { background: rgba(179, 38, 30, 0.18); transform: translateY(-4px); } }
+.guess-strip { display: flex; flex-wrap: wrap; gap: 6px; max-height: 64px; overflow: hidden; }
+.guess-strip > span { font-size: 14px; padding: 2px 6px; border: 1px dashed var(--rule); border-radius: 2px; white-space: nowrap; }
+.guess-strip s { color: var(--muted); }
+.guess-strip small { color: var(--muted); font-size: 11px; }
+
 @media (max-height: 700px) {
   .screen.fit { gap: 7px; }
-  .key { height: 38px; font-size: 15px; }
-  .draft { height: 40px; }
+  .key { height: 40px; font-size: 19px; }
+  .keyboard { gap: 8px; }
+  .draft { min-height: 40px; padding-top: 7px; padding-bottom: 7px; }
   .timer { font-size: 26px; }
   .card { padding: 10px 12px; gap: 8px; }
+}
+
+/* ---------- how to play walkthrough */
+.howto-step { display: flex; flex-direction: column; gap: 10px; min-height: 330px; touch-action: pan-y; }
+.howto-visual { background: var(--manila); border-radius: 4px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 140px; justify-content: center; }
+.howto-nav, .btn.ghost.howto-nav { width: 52px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; }
+.dots { display: flex; gap: 6px; }
+.dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--track); }
+.dots span.on { background: var(--red); }
+.mini-btn { display: inline-block; border: 2px solid var(--ink); border-radius: 2px; padding: 4px 10px; font-family: var(--type); font-size: 15px; }
+.mini-keys { display: flex; flex-direction: column; gap: 4px; }
+.mini-keys > div { display: flex; gap: 3px; justify-content: center; }
+.mini-keys span {
+  flex: 0 0 24px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+  background: var(--paper-light); border: 1px solid var(--ink); border-radius: 3px;
+}
+.mini-keys span.locked { background: var(--ink); color: var(--paper); text-decoration: line-through; }
+.mini-keys span.dim { color: #b5ad9e; border: 1px dashed #b5ad9e; background: transparent; }
+
+/* First-time nudge on the How to play stamp: a little stamp-wiggle every few seconds */
+.nudge { display: inline-block; animation: nudge 3.2s ease-in-out 1s infinite; }
+@keyframes nudge {
+  0%, 70%, 100% { transform: rotate(0) scale(1); }
+  76% { transform: rotate(-4deg) scale(1.08); }
+  82% { transform: rotate(3deg) scale(1.08); }
+  88% { transform: rotate(-2deg) scale(1.04); }
+  94% { transform: rotate(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nudge, .clue-feed.latest-first > div.latest, .draft .caret { animation: none; }
 }
