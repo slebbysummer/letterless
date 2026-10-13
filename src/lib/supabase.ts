@@ -24,6 +24,7 @@ async function signIn(): Promise<string> {
   const { data } = await supabase.auth.getSession();
   if (data.session) return data.session.user.id;
   const { data: signedIn, error } = await supabase.auth.signInAnonymously();
+  if (error?.status === 429) throw new Error('Too many new agents from this network. Wait a minute, then reload.');
   if (error || !signedIn.user) throw new Error('Could not reach the Letterless server. Check your connection and reload.');
   return signedIn.user.id;
 }

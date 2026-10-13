@@ -69,7 +69,7 @@ const STEPS: { title: string; text: ReactNode; visual: ReactNode }[] = [
   },
   {
     title: 'First to crack it scores',
-    text: <>The first agent to crack the word wins a point, and so does the clue-giver. Then the next word appears straight away.</>,
+    text: <>The first agent to crack the word wins a point, and so does the clue-giver. Then the next word appears straight away. With just 2 agents, you play as a team: every cracked word adds to your shared score.</>,
     visual: (
       <div className="howto-visual">
         <div style={{ fontSize: 15 }}>HORSE, cracked by Agent Moth</div>

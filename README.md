@@ -137,6 +137,16 @@ docs/                    brief, spec and design references
 - **Briefing timer:** shows a plain 0:03 countdown.
 - **Home page:** the footer sits right under the case number box.
 
+## Changes after the fifth playtest
+
+- **2-agent games are co-op.** With two agents, individual scores always tied. Now every cracked word adds to one shared team score. The debrief shows the team total and how many words were cracked on each agent's turns.
+- **Between turns** lasts 12 seconds (was 8).
+- **Share preview:** links show a 1200×630 preview card (`public/og-image.png`). To change it, edit `scripts/og/og.html` and run `node scripts/og/make-og.mjs`. The preview tags in `index.html` point at `https://letterless-game.netlify.app`, so update them if the site address changes.
+
+### Lots of players on one Wi-Fi?
+
+Supabase limits how many new anonymous players can join per hour from one internet connection (default 30). For big parties on one Wi-Fi, raise it in the Supabase dashboard: *Authentication → Rate Limits → anonymous sign-ins*.
+
 ## Rules decisions made during the build
 
 - **Turn order** is the order agents joined. **Rounds** default to 2.

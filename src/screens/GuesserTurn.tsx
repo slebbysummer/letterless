@@ -4,7 +4,7 @@ import { Stamp } from '../components/Stamp.tsx';
 import { GameMenu } from '../components/GameMenu.tsx';
 import { TurnHeader } from '../components/TurnHeader.tsx';
 import { referee } from '../lib/api.ts';
-import { agent, pointsFor, type View } from '../lib/derive.ts';
+import { agent, isCoop, pointsFor, teamScore, type View } from '../lib/derive.ts';
 import type { Turn } from '../lib/types.ts';
 import { GUESS_MAX } from '../../supabase/functions/_shared/rules.ts';
 
@@ -20,7 +20,8 @@ export function GuesserTurn({ v, turns, onLeave }: { v: View; turns: Record<stri
   const cracked = v.turnWords.filter((w) => w.status === 'cracked').length;
   const last = [...v.turnWords].reverse().find((w) => w.status === 'cracked' || w.status === 'passed');
   const wrong = v.guesses.filter((g) => !g.correct);
-  const myPoints = pointsFor(me.id, v.gameWords, turns);
+  const coop = isCoop(game);
+  const points = coop ? teamScore(v.gameWords) : pointsFor(me.id, v.gameWords, turns);
   // Letters the clue-giver has used can't be in the word: dim them as a hint.
   const used = new Set(v.clues.flatMap((c) => [...c.text]).filter((ch) => /[A-Z]/.test(ch)));
   // Newest clue first: it's what guessers need most, and it never scrolls out of view.
@@ -53,7 +54,7 @@ export function GuesserTurn({ v, turns, onLeave }: { v: View; turns: Record<stri
           {last.status === 'cracked' && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Stamp rotate={-6} size={11} pad="1px 5px">DECLASSIFIED</Stamp>
-              {last.cracked_by === me.id && <strong style={{ fontSize: 16 }}>+1</strong>}
+              {coop ? <strong style={{ fontSize: 16 }}>+1 team</strong> : last.cracked_by === me.id && <strong style={{ fontSize: 16 }}>+1</strong>}
             </span>
           )}
         </div>
@@ -79,7 +80,7 @@ export function GuesserTurn({ v, turns, onLeave }: { v: View; turns: Record<stri
       </section>
 
       <section style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div className="row label"><span>Wrong guesses</span>{!spectator && <span>Your points: {myPoints}</span>}</div>
+        <div className="row label"><span>Wrong guesses</span>{!spectator && <span>{coop ? 'Team score' : 'Your points'}: {points}</span>}</div>
         <div className="guess-strip" data-testid="guess-feed">
           {wrong.length === 0 && <span className="muted" style={{ border: 'none', padding: 0 }}>None yet</span>}
           {[...wrong].reverse().map((g) => (
@@ -100,7 +101,7 @@ export function GuesserTurn({ v, turns, onLeave }: { v: View; turns: Record<stri
             placeholder={briefing ? 'Get ready…' : 'Your guess'} testId="guess-draft" />
           <div className="note-row">
             <span className={note ? 'error' : 'muted'} role="status">
-              {note || (used.size ? 'Faded keys are in the clues, so not in the word.' : 'First to crack it wins the point.')}
+              {note || (used.size ? 'Faded keys are in the clues, so not in the word.' : coop ? 'Every word you crack adds to your team score.' : 'First to crack it wins the point.')}
             </span>
           </div>
           <Keyboard

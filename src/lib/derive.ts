@@ -54,6 +54,15 @@ export interface ScoreRow {
   rank: number;
 }
 
+/**
+ * 2-agent games are co-op: the only guesser is always the other agent, so
+ * individual scores would tie every time. Instead every cracked word adds to
+ * one shared team score.
+ */
+export const isCoop = (game: Game) => game.turn_order.length === 2;
+
+export const teamScore = (words: TurnWord[]) => words.filter((w) => w.status === 'cracked').length;
+
 /** Leaderboard for a game. Ties share a rank (1, 1, 3). */
 export function scores(game: Game, words: TurnWord[], turns: Record<string, Turn>, byId: Record<string, Player>): ScoreRow[] {
   const rows = game.turn_order.filter((id) => byId[id]).map((id) => {

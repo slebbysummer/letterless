@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Stamp } from '../components/Stamp.tsx';
 import { referee } from '../lib/api.ts';
-import { agent, highlights, scores, type View } from '../lib/derive.ts';
+import { agent, highlights, isCoop, scores, teamScore, type View } from '../lib/derive.ts';
 import type { Turn } from '../lib/types.ts';
 
 export function Debrief({ v, turns, onLeave }: { v: View; turns: Record<string, Turn>; onLeave: () => void }) {
@@ -13,6 +13,8 @@ export function Debrief({ v, turns, onLeave }: { v: View; turns: Record<string, 
   const board = scores(game, v.gameWords, turns, byId);
   const { hardest, fastest } = highlights(v.gameWords, byId);
   const host = active.find((p) => p.id === room.host_player_id);
+  const coop = isCoop(game);
+  const team = teamScore(v.gameWords);
 
   const again = async () => {
     setBusy(true);
@@ -31,23 +33,44 @@ export function Debrief({ v, turns, onLeave }: { v: View; turns: Record<string, 
         <Stamp rotate={-8} size={20}>CASE CLOSED</Stamp>
       </div>
 
-      <section style={{ display: 'flex', flexDirection: 'column', gap: 6 }} data-testid="leaderboard">
-        <div className="board-row head">
-          <span>#</span><span>Agent</span><span className="num">Gave</span><span className="num">Cracked</span><span className="num">Pts</span>
-        </div>
-        {board.map((r, i) => (
-          <div key={r.player.id} className={`board-row${i === 0 ? ' top' : ''}${r.player.left_at ? ' left' : ''}`}>
-            <span className="typed" style={{ fontSize: 18 }}>{r.rank}</span>
-            <span className="name">{agent(r.player)}{r.player.left_at ? ' (left)' : ''}</span>
-            <span className="num">{r.gave}</span>
-            <span className="num">{r.cracked}</span>
-            <span className="pts">{r.total}</span>
+      {coop ? (
+        <section className="card" style={{ padding: 18, gap: 12 }} data-testid="leaderboard">
+          <div className="row" style={{ alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span className="label manila">Co-op mission · team score</span>
+              <span className="typed" style={{ fontSize: 26 }}>Words cracked</span>
+            </div>
+            <span className="typed" style={{ fontSize: 56, lineHeight: 1 }} data-testid="team-score">{team}</span>
           </div>
-        ))}
-        <div className="muted" style={{ fontSize: 12, padding: '2px 10px 0' }}>
-          Gave = words cracked on your turns.<br />Cracked = words you guessed first.
-        </div>
-      </section>
+          <div className="list">
+            {board.map((r) => (
+              <div key={r.player.id}>
+                <span>On {agent(r.player)}'s turns{r.player.left_at ? ' (left)' : ''}</span>
+                <strong>{r.gave}</strong>
+              </div>
+            ))}
+          </div>
+          <div className="small" style={{ color: 'var(--manila-text)' }}>Play again on this case to beat {team}.</div>
+        </section>
+      ) : (
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 6 }} data-testid="leaderboard">
+          <div className="board-row head">
+            <span>#</span><span>Agent</span><span className="num">Gave</span><span className="num">Cracked</span><span className="num">Pts</span>
+          </div>
+          {board.map((r, i) => (
+            <div key={r.player.id} className={`board-row${i === 0 ? ' top' : ''}${r.player.left_at ? ' left' : ''}`}>
+              <span className="typed" style={{ fontSize: 18 }}>{r.rank}</span>
+              <span className="name">{agent(r.player)}{r.player.left_at ? ' (left)' : ''}</span>
+              <span className="num">{r.gave}</span>
+              <span className="num">{r.cracked}</span>
+              <span className="pts">{r.total}</span>
+            </div>
+          ))}
+          <div className="muted" style={{ fontSize: 12, padding: '2px 10px 0' }}>
+            Gave = words cracked on your turns.<br />Cracked = words you guessed first.
+          </div>
+        </section>
+      )}
 
       {(hardest || fastest) && (
         <section className="highlights">

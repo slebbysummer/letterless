@@ -133,6 +133,15 @@ function RoomScreen({ entry, userId, onLeave, onGone }: {
       .catch((e) => onGone((e as Error).message));
   }, [missing]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Safety net: mid-game but missing the current turn (e.g. an update went
+  // astray)? Reload the room's state after a moment.
+  const incomplete = state.loaded && status === 'playing' && !(v?.game && v.turn);
+  useEffect(() => {
+    if (!incomplete) return;
+    const t = setTimeout(reload, 1500);
+    return () => clearTimeout(t);
+  }, [incomplete]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const banner = !connected && <div className="banner" role="status">Reconnecting…</div>;
   if (!v || !v.me) return <Message text="Opening case file…" />;
 

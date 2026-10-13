@@ -1,6 +1,6 @@
 import { GameMenu } from '../components/GameMenu.tsx';
 import { Stamp } from '../components/Stamp.tsx';
-import { agent, type View } from '../lib/derive.ts';
+import { agent, isCoop, type View } from '../lib/derive.ts';
 import { secondsLeft, useNow } from '../lib/useNow.ts';
 
 export function BetweenTurns({ v, onLeave }: { v: View; onLeave: () => void }) {
@@ -26,7 +26,7 @@ export function BetweenTurns({ v, onLeave }: { v: View; onLeave: () => void }) {
             <span className="label manila">Turn report</span>
             <span className="typed" style={{ fontSize: 26, lineHeight: 1.1 }}>{agent(giver)} cracked {cracked.length}</span>
           </div>
-          <span className="typed" style={{ fontSize: 22, whiteSpace: 'nowrap' }}>+{cracked.length} pts</span>
+          <span className="typed" style={{ fontSize: 22, whiteSpace: 'nowrap' }}>+{cracked.length} {isCoop(game) ? 'team' : 'pts'}</span>
         </div>
         <div className="list">
           {v.turnWords.map((w) => (

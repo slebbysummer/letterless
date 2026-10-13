@@ -103,7 +103,7 @@ export function Home({ onEnter, notice }: { onEnter: (e: Entered) => void; notic
       </form>
 
       <div className="row" style={{ alignItems: 'center', marginTop: 4 }}>
-        <span className="muted" style={{ fontSize: 12, lineHeight: 1.4 }}>{MIN_AGENTS} to {MAX_AGENTS} agents<br />Friends only</span>
+        <span className="muted" style={{ fontSize: 12, lineHeight: 1.4 }}>A party word game<br />for {MIN_AGENTS} to {MAX_AGENTS} agents</span>
         <Stamp rotate={-8} size={20}>TOP SECRET</Stamp>
       </div>
     </main>

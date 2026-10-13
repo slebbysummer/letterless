@@ -24,7 +24,7 @@ const TABLE_KEYS = {
 } as const;
 type Table = keyof typeof TABLE_KEYS | 'rooms';
 
-type Upsert = { type: 'upsert'; table: Table; row: { id: string } };
+type Upsert = { type: 'upsert'; table: Table; row: { id: string }; insert?: boolean };
 type Action =
   | { type: 'load'; snapshot: Omit<RoomState, 'loaded' | 'secrets'>; replay: Upsert[] }
   | Upsert
@@ -46,6 +46,10 @@ function reducer(state: RoomState, action: Action): RoomState {
     case 'upsert': {
       if (action.table === 'rooms') return { ...state, room: action.row as Room };
       const key = TABLE_KEYS[action.table];
+      // Realtime can occasionally deliver a row's INSERT after a newer copy has
+      // already arrived (via an UPDATE or a snapshot). An INSERT is never newer
+      // than a row we already hold, so ignore it rather than go back in time.
+      if (action.insert && state[key][action.row.id]) return state;
       return { ...state, [key]: { ...state[key], [action.row.id]: action.row } };
     }
     case 'secret':
@@ -116,7 +120,9 @@ export function useRoom(roomId: string) {
     const tables: Table[] = ['players', 'games', 'turns', 'turn_words', 'clues', 'guesses'];
     for (const table of tables) {
       channel.on('postgres_changes', { event: '*', schema: 'public', table, filter: `room_id=eq.${roomId}` }, (payload) => {
-        if (payload.eventType !== 'DELETE') apply({ type: 'upsert', table, row: payload.new as { id: string } });
+        if (payload.eventType !== 'DELETE') {
+          apply({ type: 'upsert', table, row: payload.new as { id: string }, insert: payload.eventType === 'INSERT' });
+        }
       });
     }
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => {
